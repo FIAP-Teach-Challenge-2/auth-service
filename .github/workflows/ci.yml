@@ -12,5 +12,5 @@ jobs:
     with:
       service-name: auth-service
       ecr-repository: togglemaster/auth-service
-      go-version: "1.25"
+      go-version: "1.24"
     secrets: inherit
