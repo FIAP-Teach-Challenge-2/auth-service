@@ -14,6 +14,7 @@ import (
 type App struct {
 	DB         *sql.DB
 	MasterKey  string
+	Fault      *FaultSwitch
 }
 
 func main() {
@@ -46,6 +47,7 @@ func main() {
 	app := &App{
 		DB:         db,
 		MasterKey:  masterKey,
+		Fault:      &FaultSwitch{},
 	}
 
 	// --- Rotas da API ---
@@ -58,6 +60,11 @@ func main() {
 	// Endpoints de "admin" para criar/gerenciar chaves
 	// Eles são protegidos pelo middleware de autenticação
 	mux.Handle("/admin/keys", app.masterKeyAuthMiddleware(http.HandlerFunc(app.createKeyHandler)))
+
+	if os.Getenv("CHAOS_ENABLED") == "true" {
+		mux.Handle("/admin/chaos", app.masterKeyAuthMiddleware(http.HandlerFunc(app.chaosHandler)))
+		log.Println("Endpoint de chaos habilitado em /admin/chaos")
+	}
 
 	log.Printf("Serviço de Autenticação (Go) rodando na porta %s", port)
 	if err := http.ListenAndServe(":"+port, mux); err != nil {

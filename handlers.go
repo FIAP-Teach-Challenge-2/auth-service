@@ -27,6 +27,12 @@ func (a *App) healthHandler(w http.ResponseWriter, r *http.Request) {
 
 // validateKeyHandler verifica se uma chave de API (enviada via Header) é válida
 func (a *App) validateKeyHandler(w http.ResponseWriter, r *http.Request) {
+	if a.Fault.Enabled() {
+		log.Println("Chaos: /validate respondendo 500 (falha injetada)")
+		http.Error(w, "Falha interna injetada (chaos)", http.StatusInternalServerError)
+		return
+	}
+
 	// Extrai a chave do header "Authorization: Bearer <key>"
 	authHeader := r.Header.Get("Authorization")
 	keyString := strings.TrimPrefix(authHeader, "Bearer ")
